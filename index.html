@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Control de Tiempos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background-color: #f0f0f0;
+            border-bottom: 2px solid #000000;
+        }
+
+        .nav-tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background-color: #e0e0e0;
+        }
+
+        .nav-tab.active {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Forms */
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 2px solid #000000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #000000;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: 2px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+        }
+
+        .btn-secondary:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Dashboard */
+        .dashboard-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-btn {
+            padding: 30px;
+            border: 3px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .dashboard-btn:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Visual Summary */
+        .summary-section {
+            margin-top: 40px;
+        }
+
+        .summary-section h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #000000;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .summary-card {
+            border: 2px solid #000000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-time {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        /* Service Tabs (Mantenimiento, Choques, Lavado) */
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
+        }
+
+        .service-header h2 {
+            font-size: 28px;
+        }
+
+        .home-btn {
+            padding: 12px 24px;
+            border: 2px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .home-btn:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Bays Grid */
+        .bays-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .bay-card {
+            border: 3px solid #000000;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .bay-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #000000;
+        }
+
+        .bay-timer {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .bay-status {
+            font-size: 14px;
+            padding: 8px 16px;
+            border: 2px solid #000000;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .bay-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .bay-btn {
+            padding: 10px 20px;
+            border: 2px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bay-btn:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .bay-btn.active {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Hidden utility */
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-nav,
+            .summary-grid,
+            .bays-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-nav,
+            .summary-grid,
+            .bays-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tab {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Sistema de Control de Tiempos</h1>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs" id="mainNav">
+        <button class="nav-tab active" data-tab="registro">Registro</button>
+        <button class="nav-tab" data-tab="inicio">Inicio</button>
+    </div>
+
+    <!-- Section: Registro -->
+    <div class="content-section active" id="registro">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px; text-align: center;">Registro de Usuario</h2>
+            <form id="registroForm">
+                <div class="form-group">
+                    <label for="regNombre">Nombre:</label>
+                    <input type="text" id="regNombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Contraseña:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section: Inicio -->
+    <div class="content-section" id="inicio">
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px; text-align: center;">Iniciar Sesión</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+                <button type="button" class="btn btn-secondary" id="btnPorCuenta">Por Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section: Dashboard -->
+    <div class="content-section" id="dashboard">
+        <h2 style="margin-bottom: 30px; text-align: center;">Panel de Control</h2>
+        
+        <!-- Navigation Buttons -->
+        <div class="dashboard-nav">
+            <button class="dashboard-btn" data-service="mantenimiento">Mantenimiento</button>
+            <button class="dashboard-btn" data-service="choques">Choques</button>
+            <button class="dashboard-btn" data-service="lavado">Lavado</button>
+        </div>
+
+        <!-- Visual Summaries -->
+        <div class="summary-section">
+            <h2>Resumen de Tiempos Muertos</h2>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px;">Mantenimiento</h3>
+                <div class="summary-grid" id="summaryMantenimiento">
+                    <div class="summary-card">
+                        <h3>Bahía 1</h3>
+                        <div class="summary-time" id="sumM1">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 2</h3>
+                        <div class="summary-time" id="sumM2">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 3</h3>
+                        <div class="summary-time" id="sumM3">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 4</h3>
+                        <div class="summary-time" id="sumM4">00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px;">Choques</h3>
+                <div class="summary-grid" id="summaryChoques">
+                    <div class="summary-card">
+                        <h3>Bahía 1</h3>
+                        <div class="summary-time" id="sumC1">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 2</h3>
+                        <div class="summary-time" id="sumC2">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 3</h3>
+                        <div class="summary-time" id="sumC3">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 4</h3>
+                        <div class="summary-time" id="sumC4">00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="margin-bottom: 15px;">Lavado</h3>
+                <div class="summary-grid" id="summaryLavado">
+                    <div class="summary-card">
+                        <h3>Bahía 1</h3>
+                        <div class="summary-time" id="sumL1">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 2</h3>
+                        <div class="summary-time" id="sumL2">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 3</h3>
+                        <div class="summary-time" id="sumL3">00:00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Bahía 4</h3>
+                        <div class="summary-time" id="sumL4">00:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Mantenimiento -->
+    <div class="content-section" id="mantenimiento">
+        <div class="service-header">
+            <h2>Mantenimiento</h2>
+            <button class="home-btn" data-goto="dashboard">🏠 Home</button>
+        </div>
+        <div class="bays-grid">
+            <div class="bay-card">
+                <h3>Bahía 1</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerM1">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('mantenimiento', 1)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('mantenimiento', 1)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 2</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerM2">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('mantenimiento', 2)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('mantenimiento', 2)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 3</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerM3">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('mantenimiento', 3)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('mantenimiento', 3)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 4</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerM4">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('mantenimiento', 4)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('mantenimiento', 4)">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Choques -->
+    <div class="content-section" id="choques">
+        <div class="service-header">
+            <h2>Choques</h2>
+            <button class="home-btn" data-goto="dashboard">🏠 Home</button>
+        </div>
+        <div class="bays-grid">
+            <div class="bay-card">
+                <h3>Bahía 1</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerC1">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('choques', 1)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('choques', 1)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 2</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerC2">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('choques', 2)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('choques', 2)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 3</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerC3">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('choques', 3)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('choques', 3)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 4</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerC4">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('choques', 4)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('choques', 4)">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Lavado -->
+    <div class="content-section" id="lavado">
+        <div class="service-header">
+            <h2>Lavado</h2>
+            <button class="home-btn" data-goto="dashboard">🏠 Home</button>
+        </div>
+        <div class="bays-grid">
+            <div class="bay-card">
+                <h3>Bahía 1</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerL1">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('lavado', 1)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('lavado', 1)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 2</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerL2">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('lavado', 2)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('lavado', 2)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 3</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerL3">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('lavado', 3)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('lavado', 3)">Reiniciar</button>
+                </div>
+            </div>
+            <div class="bay-card">
+                <h3>Bahía 4</h3>
+                <div class="bay-status">Inactiva</div>
+                <div class="bay-timer" id="timerL4">00:00:00</div>
+                <div class="bay-controls">
+                    <button class="bay-btn" onclick="toggleTimer('lavado', 4)">Iniciar</button>
+                    <button class="bay-btn" onclick="resetTimer('lavado', 4)">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Timer state storage
+        const timers = {
+            mantenimiento: {
+                1: { running: false, seconds: 0, interval: null },
+                2: { running: false, seconds: 0, interval: null },
+                3: { running: false, seconds: 0, interval: null },
+                4: { running: false, seconds: 0, interval: null }
+            },
+            choques: {
+                1: { running: false, seconds: 0, interval: null },
+                2: { running: false, seconds: 0, interval: null },
+                3: { running: false, seconds: 0, interval: null },
+                4: { running: false, seconds: 0, interval: null }
+            },
+            lavado: {
+                1: { running: false, seconds: 0, interval: null },
+                2: { running: false, seconds: 0, interval: null },
+                3: { running: false, seconds: 0, interval: null },
+                4: { running: false, seconds: 0, interval: null }
+            }
+        };
+
+        // Format time as HH:MM:SS or MM:SS for summary
+        function formatTime(seconds, includeHours = true) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (includeHours) {
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Toggle timer (start/stop)
+        function toggleTimer(service, bayNum) {
+            const timer = timers[service][bayNum];
+            const timerEl = document.getElementById(`timer${service.charAt(0).toUpperCase()}${bayNum}`);
+            const card = timerEl.closest('.bay-card');
+            const statusEl = card.querySelector('.bay-status');
+            const btnEl = card.querySelector('.bay-btn');
+            
+            if (timer.running) {
+                // Stop the timer
+                clearInterval(timer.interval);
+                timer.running = false;
+                statusEl.textContent = 'Pausada';
+                btnEl.textContent = 'Reanudar';
+                btnEl.classList.remove('active');
+            } else {
+                // Start the timer
+                timer.running = true;
+                statusEl.textContent = 'Activa - Tiempo Muerto';
+                btnEl.textContent = 'Pausar';
+                btnEl.classList.add('active');
+                
+                timer.interval = setInterval(() => {
+                    timer.seconds++;
+                    timerEl.textContent = formatTime(timer.seconds);
+                    updateSummary(service, bayNum);
+                }, 1000);
+            }
+        }
+
+        // Reset timer
+        function resetTimer(service, bayNum) {
+            const timer = timers[service][bayNum];
+            const timerEl = document.getElementById(`timer${service.charAt(0).toUpperCase()}${bayNum}`);
+            const card = timerEl.closest('.bay-card');
+            const statusEl = card.querySelector('.bay-status');
+            const btnEl = card.querySelector('.bay-btn');
+            
+            // Stop timer if running
+            if (timer.running) {
+                clearInterval(timer.interval);
+                timer.running = false;
+            }
+            
+            // Reset values
+            timer.seconds = 0;
+            timerEl.textContent = '00:00:00';
+            statusEl.textContent = 'Inactiva';
+            btnEl.textContent = 'Iniciar';
+            btnEl.classList.remove('active');
+            
+            // Update summary
+            updateSummary(service, bayNum);
+        }
+
+        // Update summary display
+        function updateSummary(service, bayNum) {
+            const timer = timers[service][bayNum];
+            let summaryId = '';
+            
+            switch(service) {
+                case 'mantenimiento':
+                    summaryId = `sumM${bayNum}`;
+                    break;
+                case 'choques':
+                    summaryId = `sumC${bayNum}`;
+                    break;
+                case 'lavado':
+                    summaryId = `sumL${bayNum}`;
+                    break;
+            }
+            
+            const summaryEl = document.getElementById(summaryId);
+            if (summaryEl) {
+                summaryEl.textContent = formatTime(timer.seconds, false);
+            }
+        }
+
+        // Tab Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                showTab(targetTab);
+            });
+        });
+
+        // Dashboard service buttons
+        document.querySelectorAll('.dashboard-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const service = btn.dataset.service;
+                showTab(service);
+            });
+        });
+
+        // Home buttons in service tabs
+        document.querySelectorAll('.home-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.goto;
+                showTab(target);
+            });
+        });
+
+        // Show specific tab
+        function showTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Show/hide main nav based on tab
+            const mainNav = document.getElementById('mainNav');
+            if (tabName === 'dashboard' || tabName === 'mantenimiento' || tabName === 'choques' || tabName === 'lavado') {
+                mainNav.style.display = 'flex';
+                // Add all nav items if not present
+                const navTabs = mainNav.querySelectorAll('.nav-tab');
+                if (navTabs.length < 5) {
+                    // Add service tabs to nav
+                    addServiceTabsToNav();
+                }
+            } else if (tabName === 'registro' || tabName === 'inicio') {
+                mainNav.style.display = 'flex';
+            }
+        }
+
+        // Add service tabs to navigation
+        function addServiceTabsToNav() {
+            const mainNav = document.getElementById('mainNav');
+            const existingTabs = Array.from(mainNav.querySelectorAll('.nav-tab')).map(t => t.dataset.tab);
+            
+            const services = ['dashboard', 'mantenimiento', 'choques', 'lavado'];
+            
+            services.forEach(service => {
+                if (!existingTabs.includes(service)) {
+                    const newTab = document.createElement('button');
+                    newTab.className = 'nav-tab';
+                    newTab.dataset.tab = service;
+                    newTab.textContent = service.charAt(0).toUpperCase() + service.slice(1);
+                    newTab.addEventListener('click', () => showTab(service));
+                    mainNav.appendChild(newTab);
+                }
+            });
+        }
+
+        // Handle "Por Cuenta" button
+        document.getElementById('btnPorCuenta').addEventListener('click', () => {
+            showTab('dashboard');
+            addServiceTabsToNav();
+        });
+
+        // Handle registration form
+        document.getElementById('registroForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Registro exitoso. Por favor, inicie sesión.');
+            showTab('inicio');
+        });
+
+        // Handle login form
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            showTab('dashboard');
+            addServiceTabsToNav();
+        });
+
+        // Initialize - show only registro and inicio tabs
+        document.getElementById('mainNav').innerHTML = `
+            <button class="nav-tab active" data-tab="registro">Registro</button>
+            <button class="nav-tab" data-tab="inicio">Inicio</button>
+        `;
+    </script>
+</body>
+</html>
+
