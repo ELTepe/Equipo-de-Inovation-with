@@ -22,6 +22,6 @@
 - Resumen visual de tiempos en dashboard
 
 ### 4. Finalización
-- [x] Probar la aplicación
-- [x] Verificar todos los requisitos
+- Probar la aplicación
+- Verificar todos los requisitos
 
