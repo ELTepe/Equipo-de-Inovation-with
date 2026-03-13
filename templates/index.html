@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>God Eye | Monitoreo Real</title>
     <style>
-        /* [Se mantiene tu CSS original igual] */
         :root {
             --primary-black: #000000;
             --accent-red: #e63946;
@@ -13,219 +12,464 @@
             --bg-white: #ffffff;
             --gray-light: #f8f9fa;
             --gray-medium: #dee2e6;
+            --green: #27ae60;
+            --yellow: #e6a817;
+            --red: #e63946;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-white); color: var(--primary-black); }
+
+        /* ── HEADER ── */
         .header { background-color: var(--primary-black); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .nav-container { display: flex; }
         .dropdown { position: relative; display: inline-block; }
         .dropbtn { background-color: var(--accent-red); color: white; padding: 10px 25px; font-size: 14px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; }
         .dropdown-content { display: none; position: absolute; right: 0; background-color: var(--primary-black); min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.3); border-top: 3px solid var(--accent-red); }
         .dropdown-content a { color: white; padding: 14px 20px; text-decoration: none; display: block; font-size: 13px; border-bottom: 1px solid #222; transition: 0.3s; }
         .dropdown-content a:hover { background-color: var(--accent-red); }
         .dropdown:hover .dropdown-content { display: block; }
-        .content-section { display: none; padding: 30px; max-width: 1300px; margin: 0 auto; }
+
+        /* ── LAYOUT ── */
+        .content-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; }
         .content-section.active { display: block; }
+
+        /* ── DASHBOARD ── */
         .dashboard-main-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 20px; }
         .zone-column { background: var(--gray-light); border: 2px solid var(--primary-black); border-radius: 8px; padding: 15px; }
         .zone-header { text-align: center; padding-bottom: 10px; border-bottom: 2px solid var(--primary-black); margin-bottom: 15px; font-weight: 900; letter-spacing: 1px; }
-        .panel-bay-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border: 1px solid var(--gray-medium); margin-bottom: 10px; border-radius: 4px; }
-        .panel-bay-row span { font-weight: bold; font-size: 14px; }
-        .panel-time { font-family: monospace; font-size: 18px; color: var(--accent-red); }
-        .bays-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .bay-card { border: 2px solid var(--primary-black); padding: 25px; border-radius: 8px; text-align: center; }
-        .bay-timer { font-family: monospace; font-size: 40px; font-weight: bold; margin: 15px 0; }
-        .status-badge { font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 3px; background: #eee; margin-bottom: 10px; display: inline-block; }
-        .running { background: #ffe3e3; color: var(--accent-red); }
-        .btn { padding: 12px; border: none; background: var(--accent-red); color: white; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; text-transform: uppercase; }
-        .btn:hover { background: var(--accent-red-hover); }
-        .btn-stop { background: var(--primary-black); }
+        .panel-bay-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: white; border: 1px solid var(--gray-medium); margin-bottom: 8px; border-radius: 6px; gap: 8px; }
+        .panel-bay-row span { font-weight: bold; font-size: 13px; }
+        .panel-svc-tag { font-size: 10px; background: #ddd; padding: 2px 7px; border-radius: 10px; font-weight: bold; color: #333; }
+        .panel-time { font-family: monospace; font-size: 16px; font-weight: bold; padding: 3px 8px; border-radius: 4px; min-width: 80px; text-align: right; }
+        .panel-time.clr-green  { background: #d4edda; color: #155724; }
+        .panel-time.clr-yellow { background: #fff3cd; color: #856404; }
+        .panel-time.clr-red    { background: #f8d7da; color: #721c24; }
+
+        /* ── BAY CARDS ── */
+        .bays-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 20px; }
+        .bay-card { border: 3px solid #ccc; padding: 20px; border-radius: 10px; text-align: center; transition: border-color 0.4s, background 0.4s; }
+        .bay-card.clr-green  { border-color: var(--green);  background: #f0fff5; }
+        .bay-card.clr-yellow { border-color: var(--yellow); background: #fffbef; }
+        .bay-card.clr-red    { border-color: var(--red);    background: #fff0f0; animation: pulseRed 1.2s infinite; }
+        @keyframes pulseRed { 0%,100% { background: #fff0f0; } 50% { background: #ffd5d5; } }
+
+        .bay-timer { font-family: monospace; font-size: 44px; font-weight: bold; margin: 10px 0; transition: color 0.4s; color: #333; }
+        .bay-card.clr-green  .bay-timer { color: var(--green); }
+        .bay-card.clr-yellow .bay-timer { color: var(--yellow); }
+        .bay-card.clr-red    .bay-timer { color: var(--red); }
+
+        .status-badge { font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 3px; background: #eee; margin-bottom: 6px; display: inline-block; }
+        .svc-label { font-size: 12px; font-weight: bold; margin: 6px 0 10px; padding: 3px 14px; background: #222; color: white; border-radius: 20px; display: inline-block; }
+        .svc-label.none { background: #aaa; }
+
+        /* ── SERVICE SELECTOR ── */
+        .svc-selector { margin: 10px 0 14px; }
+        .svc-selector p { font-size: 10px; color: #888; margin-bottom: 5px; font-weight: 700; letter-spacing: 1px; }
+        .svc-btns { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+        .svc-btn { padding: 5px 9px; font-size: 11px; font-weight: bold; border: 2px solid #555; background: white; color: #333; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+        .svc-btn:hover:not(:disabled) { background: #333; color: white; }
+        .svc-btn.selected { background: #111; color: #fff; border-color: #111; }
+        .svc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── ACTION BUTTONS ── */
+        .btn { padding: 10px; border: none; background: var(--accent-red); color: white; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 13px; margin-top: 6px; }
+        .btn:hover:not(:disabled) { opacity: 0.85; }
+        .btn-stop  { background: #111 !important; }
+        .btn-reset { background: #555 !important; }
+
+        /* ── HISTORY ── */
         .history-box { margin-top: 30px; border: 1px solid var(--primary-black); border-radius: 8px; overflow: hidden; }
         .history-title { background: var(--primary-black); color: white; padding: 10px 20px; font-size: 14px; font-weight: bold; }
+        .history-actions { padding: 10px; display: flex; gap: 10px; }
         table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-medium); font-size: 13px; }
-        th { background: var(--gray-light); }
+        th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--gray-medium); font-size: 13px; }
+        th { background: var(--gray-light); font-weight: 700; }
+        .tc-green  { background: #d4edda; color: #155724; font-family: monospace; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+        .tc-yellow { background: #fff3cd; color: #856404; font-family: monospace; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+        .tc-red    { background: #f8d7da; color: #721c24; font-family: monospace; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+
+        /* ── LOGIN ── */
         .form-container { max-width: 400px; margin: 100px auto; padding: 40px; border: 2px solid var(--primary-black); border-radius: 8px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 12px; }
         .form-group input { width: 100%; padding: 12px; border: 1px solid var(--gray-medium); border-radius: 4px; }
+
+        /* ── TOAST ALERTS ── */
+        #alert-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #c0392b; color: white; padding: 14px 18px; border-radius: 8px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.35); border-left: 5px solid #7b241c; animation: slideIn 0.3s ease; max-width: 330px; line-height: 1.4; }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <h1>God Eye <span style="color:var(--accent-red)">SYSTEM</span></h1>
-        <div class="nav-container">
-            <div class="dropdown">
-                <button class="dropbtn">MENÚ DE NAVEGACIÓN ☰</button>
-                <div class="dropdown-content">
-                    <a href="#" onclick="showTab('dashboard')">Panel Principal</a>
-                    <a href="#" onclick="showTab('mantenimiento')">Sección Mantenimiento</a>
-                    <a href="#" onclick="showTab('choques')">Sección Choques</a>
-                    <a href="#" onclick="showTab('lavado')">Sección Lavado</a>
-                    <a href="#" onclick="showTab('inicio')">Cerrar Sesión</a>
-                </div>
-            </div>
-        </div>
-    </header>
+<div id="alert-container"></div>
 
-    <div class="content-section active" id="inicio">
-        <div class="form-container">
-            <h2 style="text-align: center; margin-bottom: 20px;">Acceso Halcón</h2>
-            <div class="form-group"><label>Email</label><input type="email"></div>
-            <div class="form-group"><label>Password</label><input type="password"></div>
-            <button class="btn" onclick="showTab('dashboard')">Ingresar al Sistema</button>
+<header class="header">
+    <h1>God Eye <span style="color:var(--accent-red)">SYSTEM</span></h1>
+    <div class="dropdown">
+        <button class="dropbtn">MENÚ DE NAVEGACIÓN ☰</button>
+        <div class="dropdown-content">
+            <a href="#" onclick="showTab('dashboard')">Panel Principal</a>
+            <a href="#" onclick="showTab('mantenimiento')">Sección Mantenimiento</a>
+            <a href="#" onclick="showTab('choques')">Sección Choques</a>
+            <a href="#" onclick="showTab('lavado')">Sección Lavado</a>
+            <a href="#" onclick="showTab('inicio')">Cerrar Sesión</a>
         </div>
     </div>
+</header>
 
-    <div class="content-section" id="dashboard">
-        <h2 style="margin-bottom: 20px; border-left: 5px solid var(--accent-red); padding-left: 15px;">MONITOREO GLOBAL</h2>
-        <h3 id="bay-counter"></h3>
-        <div class="dashboard-main-grid">
-            <div class="zone-column"><div class="zone-header">MANTENIMIENTO</div><div id="panel-list-mantenimiento"></div></div>
-            <div class="zone-column"><div class="zone-header">CHOQUES</div><div id="panel-list-choques"></div></div>
-            <div class="zone-column"><div class="zone-header">LAVADO</div><div id="panel-list-lavado"></div></div>
-        </div>
+<!-- LOGIN -->
+<div class="content-section active" id="inicio">
+    <div class="form-container">
+        <h2 style="text-align:center;margin-bottom:20px;">Acceso Halcón</h2>
+        <div class="form-group"><label>Email</label><input type="email"></div>
+        <div class="form-group"><label>Password</label><input type="password"></div>
+        <button class="btn" onclick="showTab('dashboard')">Ingresar al Sistema</button>
     </div>
+</div>
 
-    <div class="content-section" id="service-view">
-        <h2 id="view-title">Zona</h2>
-        <div class="bays-grid" id="bays-grid-view"></div>
-        <div class="history-box">
-            <div class="history-title" id="history-zone-label">Historial</div>
-            <div style="padding: 10px;">
-                <button class="btn" onclick="exportHistory()" style="width: auto; background:#2c7; padding: 10px 20px;">Exportar Excel</button>
-                <button class="btn" onclick="clearHistory()" style="width: auto; background:#444; padding: 10px 20px;">Limpiar Historial</button>
-            </div>
-            <table>
-                <thead><tr><th>Bahía</th><th>Acción</th><th>Hora</th><th>Tiempo Acum.</th></tr></thead>
-                <tbody id="history-body"></tbody>
-            </table>
-        </div>
+<!-- DASHBOARD -->
+<div class="content-section" id="dashboard">
+    <h2 style="margin-bottom:20px;border-left:5px solid var(--accent-red);padding-left:15px;">MONITOREO GLOBAL</h2>
+    <div class="dashboard-main-grid">
+        <div class="zone-column"><div class="zone-header">MANTENIMIENTO</div><div id="panel-list-mantenimiento"></div></div>
+        <div class="zone-column"><div class="zone-header">CHOQUES</div><div id="panel-list-choques"></div></div>
+        <div class="zone-column"><div class="zone-header">LAVADO</div><div id="panel-list-lavado"></div></div>
     </div>
+</div>
 
-    <script>
-        const alarm = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
-        
-        let state = {
-            mantenimiento: { name: "Mantenimiento", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] },
-            choques: { name: "Choques", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] },
-            lavado: { name: "Lavado", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] },
-        };
+<!-- ZONE VIEW -->
+<div class="content-section" id="service-view">
+    <h2 id="view-title" style="margin-bottom:20px;border-left:5px solid var(--accent-red);padding-left:15px;">Zona</h2>
+    <div class="bays-grid" id="bays-grid-view"></div>
+    <div class="history-box">
+        <div class="history-title">📋 Historial de Eventos</div>
+        <div class="history-actions">
+            <button class="btn" onclick="exportHistory()" style="width:auto;background:#27ae60;padding:10px 20px;">⬇ Exportar CSV</button>
+            <button class="btn" onclick="clearHistory()"  style="width:auto;background:#444;padding:10px 20px;">🗑 Limpiar</button>
+        </div>
+        <table>
+            <thead><tr><th>Bahía</th><th>Servicio</th><th>Acción</th><th>Hora</th><th>Tiempo Acum.</th></tr></thead>
+            <tbody id="history-body"></tbody>
+        </table>
+    </div>
+</div>
 
-        const intervals = {}; // Aquí guardaremos los IDs de los intervalos
-        let currentZoneKey = '';
+<script>
+// ══════════════════════════════════════════════════════
+//  LÍMITES DE TIEMPO
+// ══════════════════════════════════════════════════════
+function ms(str) {               // "29.30" → 29min 30seg en segundos
+    const [m, s = 0] = String(str).split('.').map(Number);
+    return m * 60 + s;
+}
 
-        function formatTime(s) {
-            const h = Math.floor(s / 3600);
-            const m = Math.floor((s % 3600) / 60);
-            const sec = s % 60;
-            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-        }
+const MANT_LIMITS = {
+    '40K':  { y: ms('29'),    r: ms('34')    },
+    '50K':  { y: ms('20'),    r: ms('25')    },
+    '60K':  { y: ms('29.30'), r: ms('33')    },
+    '70K':  { y: ms('20'),    r: ms('25')    },
+    '80K':  { y: ms('22'),    r: ms('25')    },
+    '90K':  { y: ms('29.30'), r: ms('34')    },
+    '100K': { y: ms('26'),    r: ms('30')    },
+    '110K': { y: ms('30.30'), r: ms('35')    },
+    '120K': { y: ms('30.30'), r: ms('36')    },
+    '130K': { y: ms('26'),    r: ms('31')    },
+    '140K': { y: ms('22'),    r: ms('27')    },
+};
+const SVC_KEYS = ['40K','50K','60K','70K','80K','90K','100K','110K','120K','130K','140K'];
+const LAVADO_Y = 17 * 60;
+const LAVADO_R = 23 * 60;
 
-        function showTab(id) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            if (state[id]) {
-                currentZoneKey = id;
-                document.getElementById('service-view').classList.add('active');
-                renderZoneView();
-            } else {
-                document.getElementById(id).classList.add('active');
-                if(id === 'dashboard') renderDashboard();
-            }
-        }
+// ══════════════════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════════════════
+function mkZone(name, hasSvc) {
+    return { name, bays:{B1:0,B2:0,B3:0,B4:0}, running:{B1:false,B2:false,B3:false,B4:false},
+             ...(hasSvc ? {service:{B1:'',B2:'',B3:'',B4:''}} : {}), history:[] };
+}
 
-        function toggleTimer(bId) {
-            const zone = state[currentZoneKey];
-            const intervalKey = `${currentZoneKey}-${bId}`;
+let state = {
+    mantenimiento: mkZone('Mantenimiento', true),
+    choques:       mkZone('Choques',       false),
+    lavado:        mkZone('Lavado',        false),
+};
 
-            if (!zone.running[bId]) {
-                // INICIAR
-                zone.running[bId] = true;
-                zone.history.push({ bay: bId, action: 'INICIO', time: new Date().toLocaleTimeString(), total: formatTime(zone.bays[bId]) });
-                
-                intervals[intervalKey] = setInterval(() => {
-                    state[currentZoneKey].bays[bId]++;
-                    if(state[currentZoneKey].bays[bId] === 900) alarm.play();
-                    updateDisplay(bId);
-                }, 1000);
-            } else {
-                // PAUSAR
-                zone.running[bId] = false;
-                clearInterval(intervals[intervalKey]);
-                delete intervals[intervalKey];
-                zone.history.push({ bay: bId, action: 'FIN', time: new Date().toLocaleTimeString(), total: formatTime(zone.bays[bId]) });
-            }
-            saveState();
-            renderZoneView();
-        }
-
-        function updateDisplay(bId) {
-            const timeStr = formatTime(state[currentZoneKey].bays[bId]);
-            const viewTimer = document.getElementById(`view-timer-${bId}`);
-            if (viewTimer) viewTimer.textContent = timeStr;
-        }
-
-        function resetTimer(bId) {
-            const intervalKey = `${currentZoneKey}-${bId}`;
-            clearInterval(intervals[intervalKey]);
-            delete intervals[intervalKey];
-            
-            state[currentZoneKey].bays[bId] = 0;
-            state[currentZoneKey].running[bId] = false;
-            saveState();
-            renderZoneView();
-        }
-
-        function renderDashboard() {
-            ['mantenimiento', 'choques', 'lavado'].forEach(z => {
-                const list = document.getElementById(`panel-list-${z}`);
-                list.innerHTML = '';
-                Object.keys(state[z].bays).forEach(bId => {
-                    const row = document.createElement('div');
-                    row.className = 'panel-bay-row';
-                    if(state[z].running[bId]) row.style.background = "#ffe3e3";
-                    row.innerHTML = `<span>Bahía ${bId.slice(1)}</span><span class="panel-time">${formatTime(state[z].bays[bId])}</span>`;
-                    list.appendChild(row);
-                });
+try {
+    const s = JSON.parse(localStorage.getItem('godEyeState_v3') || 'null');
+    if (s) {
+        ['mantenimiento','choques','lavado'].forEach(z => {
+            if (!s[z]) return;
+            Object.assign(state[z], {
+                bays:    s[z].bays    || state[z].bays,
+                running: s[z].running || state[z].running,
+                history: s[z].history || [],
             });
+            if (s[z].service) state[z].service = s[z].service;
+        });
+    }
+} catch(e) {}
+
+const saveState = () => localStorage.setItem('godEyeState_v3', JSON.stringify(state));
+
+// ══════════════════════════════════════════════════════
+//  COLOR LOGIC
+// ══════════════════════════════════════════════════════
+function getColor(zKey, bId, secs) {
+    if (zKey === 'mantenimiento') {
+        const svc = state.mantenimiento.service?.[bId];
+        if (!svc || !MANT_LIMITS[svc]) return 'none';
+        const { y, r } = MANT_LIMITS[svc];
+        return secs >= r ? 'red' : secs >= y ? 'yellow' : 'green';
+    }
+    if (zKey === 'lavado') {
+        return secs >= LAVADO_R ? 'red' : secs >= LAVADO_Y ? 'yellow' : 'green';
+    }
+    return 'none'; // choques sin color
+}
+
+// ══════════════════════════════════════════════════════
+//  ALERTAS (una sola vez por transición a rojo)
+// ══════════════════════════════════════════════════════
+const redAlerted = {};
+
+function toast(msg) {
+    const box  = document.getElementById('alert-container');
+    const el   = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = `🚨 ${msg}`;
+    box.appendChild(el);
+    setTimeout(() => el.remove(), 7000);
+}
+
+function tryAlarm() {
+    try { new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg').play(); } catch(e){}
+}
+
+// ══════════════════════════════════════════════════════
+//  INTERVALO GLOBAL
+// ══════════════════════════════════════════════════════
+let currentZoneKey = '';
+
+setInterval(() => {
+    let dirty = false;
+
+    ['mantenimiento','choques','lavado'].forEach(zKey => {
+        const zone = state[zKey];
+        Object.keys(zone.bays).forEach(bId => {
+            if (!zone.running[bId]) return;
+            dirty = true;
+            zone.bays[bId]++;
+            const secs = zone.bays[bId];
+            const color = getColor(zKey, bId, secs);
+            const key   = `${zKey}-${bId}`;
+
+            // Alerta rojo
+            if (color === 'red' && !redAlerted[key]) {
+                redAlerted[key] = true;
+                toast(`¡TIEMPO EXCEDIDO! ${zone.name} — Bahía ${bId.slice(1)}`);
+                tryAlarm();
+            }
+
+            // Actualiza service-view si está visible
+            if (currentZoneKey === zKey) {
+                const timerEl = document.getElementById(`vt-${bId}`);
+                if (timerEl) timerEl.textContent = fmt(secs);
+                const card = document.getElementById(`bc-${bId}`);
+                if (card) card.className = `bay-card${color !== 'none' ? ' clr-' + color : ''}`;
+            }
+
+            // Actualiza dashboard
+            const dEl = document.getElementById(`dt-${zKey}-${bId}`);
+            if (dEl) {
+                dEl.textContent = fmt(secs);
+                dEl.className   = `panel-time${color !== 'none' ? ' clr-' + color : ''}`;
+            }
+        });
+    });
+
+    if (dirty) saveState();
+}, 1000);
+
+// ══════════════════════════════════════════════════════
+//  UTILIDADES
+// ══════════════════════════════════════════════════════
+function fmt(s) {
+    return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════════════════════
+function showTab(id) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    if (state[id]) {
+        currentZoneKey = id;
+        document.getElementById('service-view').classList.add('active');
+        renderZoneView();
+    } else {
+        document.getElementById(id).classList.add('active');
+        if (id === 'dashboard') renderDashboard();
+    }
+}
+
+// ══════════════════════════════════════════════════════
+//  ACCIONES
+// ══════════════════════════════════════════════════════
+function selectService(bId, svc) {
+    if (state.mantenimiento.running[bId]) return;
+    state.mantenimiento.service[bId] = svc;
+    saveState();
+    renderZoneView();
+}
+
+function toggleTimer(bId) {
+    const zone = state[currentZoneKey];
+    const isMant = currentZoneKey === 'mantenimiento';
+
+    if (!zone.running[bId] && isMant && !zone.service?.[bId]) {
+        toast(`Bahía ${bId.slice(1)}: selecciona un tipo de servicio primero`);
+        return;
+    }
+
+    const secs  = zone.bays[bId];
+    const color = getColor(currentZoneKey, bId, secs);
+    const key   = `${currentZoneKey}-${bId}`;
+
+    if (!zone.running[bId]) {
+        zone.running[bId] = true;
+        delete redAlerted[key];
+        zone.history.push({ bay: bId, service: zone.service?.[bId] || '—', action: 'INICIO', time: new Date().toLocaleTimeString(), total: fmt(secs), color });
+    } else {
+        zone.running[bId] = false;
+        zone.history.push({ bay: bId, service: zone.service?.[bId] || '—', action: 'FIN', time: new Date().toLocaleTimeString(), total: fmt(secs), color });
+    }
+
+    saveState();
+    renderZoneView();
+}
+
+function resetTimer(bId) {
+    delete redAlerted[`${currentZoneKey}-${bId}`];
+    state[currentZoneKey].bays[bId]    = 0;
+    state[currentZoneKey].running[bId] = false;
+    if (currentZoneKey === 'mantenimiento' && state[currentZoneKey].service)
+        state[currentZoneKey].service[bId] = '';
+    saveState();
+    renderZoneView();
+}
+
+function clearHistory() {
+    state[currentZoneKey].history = [];
+    saveState();
+    renderHistory();
+}
+
+function exportHistory() {
+    const rows = [['Bahía','Servicio','Acción','Hora','Tiempo Acum.','Color']];
+    state[currentZoneKey].history.forEach(h => rows.push([h.bay, h.service||'—', h.action, h.time, h.total, h.color||'—']));
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));
+    a.download = `historial-${currentZoneKey}.csv`;
+    a.click();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderDashboard() {
+    ['mantenimiento','choques','lavado'].forEach(zKey => {
+        const list = document.getElementById(`panel-list-${zKey}`);
+        list.innerHTML = '';
+        Object.keys(state[zKey].bays).forEach(bId => {
+            const secs    = state[zKey].bays[bId];
+            const running = state[zKey].running[bId];
+            const color   = running ? getColor(zKey, bId, secs) : 'none';
+            const svc     = state[zKey].service?.[bId] || '';
+            const row     = document.createElement('div');
+            row.className = 'panel-bay-row';
+            row.innerHTML = `
+                <span>Bahía ${bId.slice(1)}</span>
+                ${svc ? `<span class="panel-svc-tag">${svc}</span>` : ''}
+                <span class="panel-time${color !== 'none' && running ? ' clr-' + color : ''}" id="dt-${zKey}-${bId}">${fmt(secs)}</span>
+            `;
+            list.appendChild(row);
+        });
+    });
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER ZONE VIEW
+// ══════════════════════════════════════════════════════
+function renderZoneView() {
+    const zone   = state[currentZoneKey];
+    const isMant = currentZoneKey === 'mantenimiento';
+    document.getElementById('view-title').textContent = `GESTIÓN DE ${zone.name.toUpperCase()}`;
+    const grid = document.getElementById('bays-grid-view');
+    grid.innerHTML = '';
+
+    Object.keys(zone.bays).forEach(bId => {
+        const active = zone.running[bId];
+        const secs   = zone.bays[bId];
+        const color  = active ? getColor(currentZoneKey, bId, secs) : 'none';
+        const svc    = zone.service?.[bId] || '';
+
+        // Service selector (solo mantenimiento)
+        let svcHTML = '';
+        if (isMant) {
+            const btns = SVC_KEYS.map(k =>
+                `<button class="svc-btn${svc===k?' selected':''}" onclick="selectService('${bId}','${k}')"${active?' disabled':''}>${k}</button>`
+            ).join('');
+            svcHTML = `<div class="svc-selector"><p>TIPO DE SERVICIO</p><div class="svc-btns">${btns}</div></div>`;
         }
 
-        function renderZoneView() {
-            const zone = state[currentZoneKey];
-            document.getElementById('view-title').textContent = `GESTIÓN DE ${zone.name.toUpperCase()}`;
-            const grid = document.getElementById('bays-grid-view');
-            grid.innerHTML = '';
+        const svcTag = isMant
+            ? `<div class="svc-label${svc ? '' : ' none'}">${svc || 'Sin servicio'}</div>`
+            : '';
 
-            Object.keys(zone.bays).forEach(bId => {
-                const active = zone.running[bId];
-                const card = document.createElement('div');
-                card.className = 'bay-card';
-                card.innerHTML = `
-                    <span class="status-badge ${active ? 'running' : ''}">${active ? 'EN TIEMPO MUERTO' : 'ESTACIONADO'}</span>
-                    <h3>Bahía ${bId.slice(1)}</h3>
-                    <div class="bay-timer" id="view-timer-${bId}">${formatTime(zone.bays[bId])}</div>
-                    <button class="btn ${active ? 'btn-stop' : ''}" onclick="toggleTimer('${bId}')">${active ? 'Pausar' : 'Iniciar'}</button>
-                    <button class="btn" onclick="resetTimer('${bId}')" style="margin-top:8px; background:#555;">Reset</button>
-                `;
-                grid.appendChild(card);
-            });
-            renderHistory();
-        }
+        const card = document.createElement('div');
+        card.id        = `bc-${bId}`;
+        card.className = `bay-card${color !== 'none' ? ' clr-' + color : ''}`;
+        card.innerHTML = `
+            <span class="status-badge">${active ? '▶ EN SERVICIO' : '⏸ ESTACIONADO'}</span>
+            <h3 style="font-size:17px;margin:6px 0;">Bahía ${bId.slice(1)}</h3>
+            ${svcTag}
+            ${svcHTML}
+            <div class="bay-timer" id="vt-${bId}">${fmt(secs)}</div>
+            <button class="btn${active?' btn-stop':''}" onclick="toggleTimer('${bId}')">${active ? '⏸ Pausar' : '▶ Iniciar'}</button>
+            <button class="btn btn-reset" onclick="resetTimer('${bId}')">↺ Reset</button>
+        `;
+        grid.appendChild(card);
+    });
 
-        function renderHistory() {
-            const body = document.getElementById('history-body');
-            body.innerHTML = state[currentZoneKey].history.slice().reverse().map(h => `
-                <tr><td><strong>${h.bay}</strong></td><td style="color:${h.action==='INICIO'?'#2ecc71':'#e63946'}">${h.action}</td><td>${h.time}</td><td>${h.total}</td></tr>
-            `).join('');
-        }
+    renderHistory();
+}
 
-        function saveState() { localStorage.setItem("godEyeState", JSON.stringify(state)); }
-        
-        // Carga inicial
-        const saved = localStorage.getItem("godEyeState");
-        if(saved) state = JSON.parse(saved);
-        renderDashboard();
-    </script>
+// ══════════════════════════════════════════════════════
+//  RENDER HISTORY
+// ══════════════════════════════════════════════════════
+function renderHistory() {
+    const isMant = currentZoneKey === 'mantenimiento';
+    document.getElementById('history-body').innerHTML =
+        state[currentZoneKey].history.slice().reverse().map(h => {
+            const ac = h.action === 'INICIO' ? '#27ae60' : '#e63946';
+            let timeCell = h.total;
+            if (isMant && h.color && h.color !== 'none') {
+                timeCell = `<span class="tc-${h.color}">${h.total}</span>`;
+            }
+            return `<tr>
+                <td><strong>${h.bay}</strong></td>
+                <td>${h.service || '—'}</td>
+                <td style="color:${ac};font-weight:bold;">${h.action}</td>
+                <td>${h.time}</td>
+                <td>${timeCell}</td>
+            </tr>`;
+        }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+renderDashboard();
+</script>
 </body>
 </html>
