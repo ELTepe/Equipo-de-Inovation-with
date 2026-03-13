@@ -133,17 +133,18 @@
 
     <div class="content-section" id="dashboard">
         <h2 style="margin-bottom: 20px; border-left: 5px solid var(--accent-red); padding-left: 15px;">MONITOREO GLOBAL DE BAHÍAS</h2>
+        <h3 id="bay-counter" style="margin-bottom:15px;"></h3>
         <div class="dashboard-main-grid">
             <div class="zone-column">
-                <div class="zone-header">🛠 MANTENIMIENTO</div>
+                <div class="zone-header">MANTENIMIENTO</div>
                 <div id="panel-list-mantenimiento"></div>
             </div>
             <div class="zone-column">
-                <div class="zone-header">💥 CHOQUES</div>
+                <div class="zone-header">CHOQUES</div>
                 <div id="panel-list-choques"></div>
             </div>
             <div class="zone-column">
-                <div class="zone-header">🧼 LAVADO</div>
+                <div class="zone-header">LAVADO</div>
                 <div id="panel-list-lavado"></div>
             </div>
         </div>
@@ -155,6 +156,15 @@
 
         <div class="history-box">
             <div class="history-title" id="history-zone-label">Historial</div>
+
+            <button class="btn" onclick="clearHistory()" style="margin:10px; background:#444;">
+                Limpiar Historial
+            </button>
+
+            <button class="btn" onclick="exportHistory()" style="margin:10px; background:#2c7;">
+                Exportar Excel
+            </button>
+
             <table>
                 <thead>
                     <tr><th>Bahía</th><th>Acción</th><th>Hora</th><th>Tiempo Acum.</th></tr>
@@ -165,14 +175,40 @@
     </div>
 
     <script>
+        const alarm = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
         const state = {
-            mantenimiento: { name: "Mantenimiento", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] },
-            choques: { name: "Choques", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] },
-            lavado: { name: "Lavado", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [] }
+            mantenimiento: { name: "Mantenimiento", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [], lastReset: Date.now() },
+            choques: { name: "Choques", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [], lastReset: Date.now() },
+            lavado: { name: "Lavado", bays: { B1:0, B2:0, B3:0, B4:0 }, running: { B1:false, B2:false, B3:false, B4:false }, history: [], lastReset: Date.now() },
         };
 
         let currentZoneKey = '';
         const intervals = {};
+
+        function saveState(){
+            localStorage.setItem("godEyeState", JSON.stringify(state));
+        }
+        
+        function checkHistoryReset(){
+            const now = Date.now();
+            const day = 24 * 60 * 60 * 1000;
+
+            Object.keys(state).forEach(zoneKey => {
+
+                const zone = state[zoneKey];
+
+                if(now - zone.lastReset >= day){
+
+                    zone.history = [];
+                    zone.lastReset = now;
+
+                }
+
+            });
+
+            saveState();
+        }
+
 
         function formatTime(s) {
             const h = Math.floor(s / 3600);
@@ -202,6 +238,10 @@
                 Object.keys(state[z].bays).forEach(bId => {
                     const row = document.createElement('div');
                     row.className = 'panel-bay-row';
+                    if(state[z].running[bId]){
+                        row.style.background = "#ffe3e3";
+                    }
+
                     row.innerHTML = `
                         <span>Bahía ${bId.replace('B','')}</span>
                         <span class="panel-time" id="dash-timer-${z}-${bId}">${formatTime(state[z].bays[bId])}</span>
@@ -209,6 +249,20 @@
                     list.appendChild(row);
                 });
             });
+            let total = 0;
+            let active = 0;
+
+            Object.keys(state).forEach(z=>{
+                Object.keys(state[z].running).forEach(b=>{
+                    total++;
+                    if(state[z].running[b]) active++;
+                });
+            });
+
+            const counter = document.getElementById("bay-counter");
+            if(counter){
+                counter.textContent = `Bahías ocupadas: ${active} / ${total}`;
+            }
         }
 
         // Renderiza la vista de control de una zona específica
@@ -230,6 +284,10 @@
                     <button class="btn ${active ? 'btn-stop' : ''}" onclick="toggleTimer('${bId}')">
                         ${active ? 'Pausar' : 'Iniciar'}
                     </button>
+                    
+                    <button class="btn" onclick="resetTimer('${bId}')" style="margin-top:8px; background:#555;">
+                        Reset
+                        </button>
                 `;
                 grid.appendChild(card);
             });
@@ -240,11 +298,16 @@
             const zone = state[currentZoneKey];
             const now = new Date().toLocaleTimeString();
 
+
             if (!zone.running[bId]) {
                 zone.running[bId] = true;
                 zone.history.push({ bay: bId, action: 'INICIO', time: now, total: formatTime(zone.bays[bId]) });
+                saveState();
                 intervals[`${currentZoneKey}-${bId}`] = setInterval(() => {
                     zone.bays[bId]++;
+                    if(zone.bays[bId] === 900){
+                        alarm.play();
+                    }
                     // Actualizar vista de zona si está abierta
                     const vt = document.getElementById(`view-timer-${bId}`);
                     if (vt) vt.textContent = formatTime(zone.bays[bId]);
@@ -256,9 +319,41 @@
                 zone.running[bId] = false;
                 clearInterval(intervals[`${currentZoneKey}-${bId}`]);
                 zone.history.push({ bay: bId, action: 'FIN', time: now, total: formatTime(zone.bays[bId]) });
+                saveState();
             }
             renderZoneView();
         }
+
+        function resetTimer(bId){
+            const zone = state[currentZoneKey];
+            const zoneKey = currentZoneKey;
+            
+            // si el tiempo ya es 0, no hacer nada
+            if(zone.bays[bId] === 0){
+                return;
+            }
+            // Detener timer si estaba corriendo
+            if(zone.running[bId]){
+                clearInterval(intervals[`${currentZoneKey}-${bId}`]);
+                zone.running[bId] = false;
+            }
+            // Reiniciar tiempo
+            zone.bays[bId] = 0;
+
+            // Registrar en historial
+            const now = new Date().toLocaleTimeString();
+            zone.history.push({
+                bay: bId,
+                action: 'RESET',
+                time: now,
+                total: "00:00:00"
+            });
+            
+            saveState();
+            
+            renderZoneView();
+        }
+
 
         function renderHistory() {
             const body = document.getElementById('history-body');
@@ -273,8 +368,55 @@
             });
         }
 
+        function clearHistory(){
+            
+            const zone = state[currentZoneKey];
+
+            const confirmar = confirm("¿Seguro que quieres borrar todo el historial de esta zona?");
+
+            if(!confirmar){
+                return;
+            }
+
+    zone.history = [];
+
+    saveState();
+
+    renderHistory();
+}
+
+
+        // Cargar estado guardado si existe
+        const savedState = localStorage.getItem("godEyeState");
+        
+        if(savedState){
+            Object.assign(state, JSON.parse(savedState));
+        }
+
+        checkHistoryReset();
+
         // Inicializar el dashboard al cargar
         renderDashboard();
+        
+        function exportHistory(){
+
+            const zone = state[currentZoneKey];
+
+            let csv = "Bahia,Accion,Hora,Tiempo\n";
+
+            zone.history.forEach(h=>{
+                csv += `${h.bay},${h.action},${h.time},${h.total}\n`;
+            });
+
+            const blob = new Blob([csv], {type:"text/csv"});
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `historial-${currentZoneKey}.csv`;
+            a.click();
+        }
+
     </script>
 </body>
 </html>
