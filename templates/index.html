@@ -27,6 +27,12 @@
         .dropdown-content a { color: white; padding: 14px 20px; text-decoration: none; display: block; font-size: 13px; border-bottom: 1px solid #222; transition: 0.3s; }
         .dropdown-content a:hover { background-color: var(--accent-red); }
         .dropdown:hover .dropdown-content { display: block; }
+        .dropbtn:disabled { background-color: #444; cursor: not-allowed; opacity: 0.7; }
+
+/* Para cuando no queremos que se despliegue nada */
+.dropdown.locked:hover .dropdown-content {
+    display: none;
+}
 
         /* ── LAYOUT ── */
         .content-section { display: none; padding: 30px; max-width: 1400px; margin: 0 auto; }
@@ -103,16 +109,16 @@
 
 <div id="alert-container"></div>
 
-<header class="header">
+<header class="header" id="main-header">
     <h1>God Eye <span style="color:var(--accent-red)">SYSTEM</span></h1>
-    <div class="dropdown">
-        <button class="dropbtn">MENÚ DE NAVEGACIÓN ☰</button>
-        <div class="dropdown-content">
+    <div class="dropdown" id="menu-dropdown">
+        <button class="dropbtn" id="btn-menu-toggle">MENÚ DE NAVEGACIÓN ☰</button>
+        <div class="dropdown-content" id="menu-items">
             <a href="#" onclick="showTab('dashboard')">Panel Principal</a>
             <a href="#" onclick="showTab('mantenimiento')">Sección Mantenimiento</a>
             <a href="#" onclick="showTab('choques')">Sección Choques</a>
             <a href="#" onclick="showTab('lavado')">Sección Lavado</a>
-            <a href="#" onclick="showTab('inicio')">Cerrar Sesión</a>
+            <a href="#" onclick="logout()">Cerrar Sesión</a>
         </div>
     </div>
 </header>
@@ -120,10 +126,24 @@
 <!-- LOGIN -->
 <div class="content-section active" id="inicio">
     <div class="form-container">
-        <h2 style="text-align:center;margin-bottom:20px;">Acceso Halcón</h2>
-        <div class="form-group"><label>Email</label><input type="email"></div>
-        <div class="form-group"><label>Password</label><input type="password"></div>
-        <button class="btn" onclick="showTab('dashboard')">Ingresar al Sistema</button>
+        <h2 id="auth-title" style="text-align:center;margin-bottom:20px;">Acceso Halcón</h2>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+        
+        <button class="btn" id="btnMainAction">Ingresar al Sistema</button>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <a href="#" id="toggleAuth" style="font-size:12px; color:var(--accent-red); text-decoration:none; font-weight:bold;">
+                ¿No tienes cuenta? Regístrate aquí
+            </a>
+        </div>
+        <p id="error-msg" style="color:red; font-size:12px; margin-top:10px; text-align:center; display:none;"></p>
     </div>
 </div>
 
@@ -470,6 +490,113 @@ function renderHistory() {
 //  INIT
 // ══════════════════════════════════════════════════════
 renderDashboard();
+</script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        onAuthStateChanged, 
+        signOut 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCe4kd8_VndMH1bxKWGxjhmrnZ8OXP_vjY",
+        authDomain: "sistema-de-control-de-tiempos.firebaseapp.com",
+        databaseURL: "https://sistema-de-control-de-tiempos-default-rtdb.firebaseio.com",
+        projectId: "sistema-de-control-de-tiempos",
+        storageBucket: "sistema-de-control-de-tiempos.firebasestorage.app",
+        messagingSenderId: "487211720425",
+        appId: "1:487211720425:web:d5b318088b936e65fcda78",
+        measurementId: "G-VX6C0KVMTD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isLoginMode = true;
+    const authTitle = document.getElementById('auth-title');
+    const btnMainAction = document.getElementById('btnMainAction');
+    const toggleContainer = document.getElementById('toggleAuth'); // Contenedor padre
+    const errorEl = document.getElementById('error-msg');
+
+    // Función para actualizar el contenido y reasignar el evento solo al link
+    const updateToggleUI = () => {
+        const text = isLoginMode ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? ";
+        const linkText = isLoginMode ? "Regístrate aquí" : "Inicia Sesión";
+        
+        // Seteamos el texto base en negro y creamos el span rojo con un ID único
+        toggleContainer.style.color = "black";
+        toggleContainer.style.textDecoration = "none";
+        toggleContainer.style.cursor = "default";
+        toggleContainer.innerHTML = `${text}<span id="clickableLink" style="color:var(--accent-red); text-decoration:underline; cursor:pointer;">${linkText}</span>`;
+
+        // Añadimos el evento SOLO al span rojo
+        document.getElementById('clickableLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            errorEl.style.display = 'none';
+
+            if (isLoginMode) {
+                authTitle.innerText = "Acceso Halcón";
+                btnMainAction.innerText = "Ingresar al Sistema";
+            } else {
+                authTitle.innerText = "Nuevo Halcón";
+                btnMainAction.innerText = "Crear Cuenta";
+            }
+            updateToggleUI(); // Re-renderizamos para actualizar textos
+        });
+    };
+
+    if (toggleContainer) updateToggleUI();
+
+    if (btnMainAction) {
+        btnMainAction.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (!email || !password) { showError("Campos obligatorios"); return; }
+
+            if (isLoginMode) {
+                signInWithEmailAndPassword(auth, email, password)
+                    .catch(() => showError("Credenciales inválidas"));
+            } else {
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(() => alert("¡Cuenta creada!"))
+                    .catch((err) => showError("Error en el registro"));
+            }
+        });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        const menuDropdown = document.getElementById('menu-dropdown');
+        const menuBtn = document.getElementById('btn-menu-toggle');
+        const menuItems = document.getElementById('menu-items');
+        if (user) {
+            if (menuDropdown) menuDropdown.classList.remove('locked');
+            if (menuBtn) menuBtn.disabled = false;
+            if (menuItems) menuItems.style.display = ""; 
+            showTab('dashboard');
+        } else {
+            if (menuDropdown) menuDropdown.classList.add('locked');
+            if (menuBtn) menuBtn.disabled = true;
+            if (menuItems) menuItems.style.display = "none"; 
+            showTab('inicio');
+        }
+    });
+
+    function showError(msg) {
+        errorEl.innerText = msg;
+        errorEl.style.display = 'block';
+    }
+
+    window.logout = () => {
+        signOut(auth).then(() => {
+            isLoginMode = true;
+            if (authTitle) authTitle.innerText = "Acceso Halcón";
+            updateToggleUI();
+        });
+    };
 </script>
 </body>
 </html>
